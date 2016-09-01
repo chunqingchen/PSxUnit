@@ -16,7 +16,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.IO;
 using System.Xml;
-
+using System.Management.Automation;
 public enum TestType
 {
     CiFact,
@@ -27,71 +27,6 @@ public enum TestType
 
 namespace PSxUnit
 {
-    //public interface IXUnitExecutionListener
-    //{
-    //    void OnTestCaseStarting(string id);
-    //    void OnTestCaseFinished(string id);
-    //    void OnTestFailed(string id,
-    //        decimal executionTime, string output, string[] exceptionTypes, string[] messages, string[] stackTraces);
-    //    void OnTestPassed(string id,
-    //        decimal executionTime, string output);
-    //    void OnTestSkipped(string id,
-    //        string reason);
-    //}
-    //public class DefaultExecutionVisitor : Xunit.TestMessageVisitor<ITestAssemblyFinished>
-    //{
-    //    IXUnitExecutionListener executionListener;
-
-    //    public DefaultExecutionVisitor()
-    //    {
-    //        this.executionListener = executionListener;
-    //    }
-
-    //    protected override bool Visit(ITestCaseStarting testCaseStarting)
-    //    {
-    //        executionListener.OnTestCaseStarting(testCaseStarting.TestCase.UniqueID);
-    //        return true;
-    //    }
-
-    //    protected override bool Visit(ITestCaseFinished testCaseFinished)
-    //    {
-    //        executionListener.OnTestCaseFinished(testCaseFinished.TestCase.UniqueID);
-    //        return true;
-    //    }
-
-    //    protected override bool Visit(ITestFailed testFailed)
-    //    {
-    //        executionListener.OnTestFailed(testFailed.TestCase.UniqueID,
-    //            testFailed.ExecutionTime, testFailed.Output, testFailed.ExceptionTypes, testFailed.Messages, testFailed.StackTraces);
-    //        return true;
-    //    }
-
-    //    protected override bool Visit(ITestPassed testPassed)
-    //    {
-    //        executionListener.OnTestPassed(testPassed.TestCase.UniqueID, testPassed.ExecutionTime, testPassed.Output);
-    //        return true;
-    //    }
-
-    //    protected override bool Visit(ITestSkipped testSkipped)
-    //    {
-    //        executionListener.OnTestSkipped(testSkipped.TestCase.UniqueID, testSkipped.Reason);
-    //        return true;
-    //    }
-    //}
-    //public class TestDiscoveryVisitor : Xunit.TestMessageVisitor<IDiscoveryCompleteMessage>
-    //{
-    //    public TestDiscoveryVisitor()
-    //    {
-    //        TestCases = new List<ITestCase>();
-    //    }
-    //    public List<ITestCase> TestCases { get; set; }
-
-    //    protected override bool Visit(ITestCaseDiscoveryMessage testCaseDiscovered)
-    //    {
-    //        TestCases.Add(testCaseDiscovered.TestCase);
-    //        return true;
-    //    }
-    //}
 
     public class Options : CommandLineOptions
     {
@@ -123,13 +58,15 @@ namespace PSxUnit
 
     public class Program
     {
-        protected Options opt;
+        public static Options opt;
         protected XunitFrontController controller;
         public static void Main(string[] args)
         {
+            string appBase = @"c:\dev\powershell";
+            PowerShellAssemblyLoadContextInitializer.SetPowerShellAssemblyLoadContext(appBase);
             Program p = new Program();
-            p.Go(args);
-            //Console.ReadKey();
+            Go(args);
+            Console.ReadKey();
             Environment.Exit(0);
         }
         static List<IRunnerReporter> GetAvailableRunnerReporters()
@@ -170,7 +107,7 @@ namespace PSxUnit
             return result;
         }
 
-        public void GetTests(Options o)
+        public static void GetTests(Options o)
         {
             var nullMessage = new Xunit.NullMessageSink();
             var discoveryOptions = TestFrameworkOptions.ForDiscovery();
@@ -243,7 +180,7 @@ namespace PSxUnit
                 Console.ResetColor();
             }
         }
-        public void Go(string[] args)
+        public static void Go(string[] args)
         {
             opt = new Options(args);
             GetTests(opt);
