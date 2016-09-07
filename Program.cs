@@ -16,7 +16,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.IO;
 using System.Xml;
-using System.Management.Automation;
+
 public enum TestType
 {
     CiFact,
