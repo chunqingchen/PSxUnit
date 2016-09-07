@@ -62,8 +62,8 @@ namespace PSxUnit
         protected XunitFrontController controller;
         public static void Main(string[] args)
         {
-            string appBase = @"c:\dev\powershell";
-            PowerShellAssemblyLoadContextInitializer.SetPowerShellAssemblyLoadContext(appBase);
+            //string appBase = @"c:\dev\powershell";
+            //PowerShellAssemblyLoadContextInitializer.SetPowerShellAssemblyLoadContext(appBase);
             Program p = new Program();
             Go(args);
             Console.ReadKey();
@@ -71,8 +71,8 @@ namespace PSxUnit
         }
         static List<IRunnerReporter> GetAvailableRunnerReporters()
         {
-            //var result = new List<IRunnerReporter>();
-            //var dependencyModel = DependencyContext.Load(typeof(Program).GetTypeInfo().Assembly);
+            var result = new List<IRunnerReporter>();
+            var dependencyModel = DependencyContext.Load(typeof(Program).GetTypeInfo().Assembly);
 
             foreach (var assemblyName in dependencyModel.GetRuntimeAssemblyNames(RuntimeEnvironment.GetRuntimeIdentifier()))
             {
