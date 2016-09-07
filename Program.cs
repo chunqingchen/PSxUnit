@@ -71,8 +71,8 @@ namespace PSxUnit
         }
         static List<IRunnerReporter> GetAvailableRunnerReporters()
         {
-            var result = new List<IRunnerReporter>();
-            var dependencyModel = DependencyContext.Load(typeof(Program).GetTypeInfo().Assembly);
+            //var result = new List<IRunnerReporter>();
+            //var dependencyModel = DependencyContext.Load(typeof(Program).GetTypeInfo().Assembly);
 
             foreach (var assemblyName in dependencyModel.GetRuntimeAssemblyNames(RuntimeEnvironment.GetRuntimeIdentifier()))
             {
