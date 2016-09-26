@@ -43,6 +43,9 @@ namespace PSxUnit
         [Option(Description = "the type of test to execute")]
         public TestType TestType = TestType.All;
 
+        [Option(Description = "TimeOut for single test case")]
+        public int TimeOut = 5000;
+
         [Option(Alias = "?", Description = "Get Help")]
         public bool help = false;
 
@@ -110,7 +113,7 @@ namespace PSxUnit
             return result;
         }
 
-        public static void GetTests(Options o)
+        public static void RunTests(Options o)
         {
             
             var nullMessage = new Xunit.NullMessageSink();
@@ -171,7 +174,7 @@ namespace PSxUnit
                     var message = new Xunit.NullMessageSink();
                     var executionOptions = TestFrameworkOptions.ForExecution();
                     c.RunTests(tv.TestCases.Take<Xunit.Abstractions.ITestCase>(1), resultsSink, executionOptions);
-                    resultsSink.Finished.WaitOne(5000);
+                    resultsSink.Finished.WaitOne(o.TimeOut);
                     tv.TestCases.RemoveAt(0);
                     totalResult++;
                     totalErrors = totalErrors + resultsSink.ExecutionSummary.Errors;
@@ -197,7 +200,7 @@ namespace PSxUnit
         public static void Go(string[] args)
         {
             opt = new Options(args);
-            GetTests(opt);
+            RunTests(opt);
             if (opt.help)
             {
                 opt.Help();
