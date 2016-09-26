@@ -19,7 +19,7 @@
     "System.Collections.NonGeneric": "4.0.1",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "xunit.runner.reporters": "2.2.0-beta3-build3328",
-
+    "Microsoft.PowerShell.CoreCLR.AssemblyLoadContext": "1.0.0-alpha9"
   },
 
   "frameworks": {

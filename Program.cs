@@ -16,6 +16,8 @@ using System.Linq;
 using System.Xml.Linq;
 using System.IO;
 using System.Xml;
+using System.Management.Automation;
+
 
 public enum TestType
 {
@@ -62,11 +64,12 @@ namespace PSxUnit
         protected XunitFrontController controller;
         public static void Main(string[] args)
         {
-            //string appBase = @"c:\dev\powershell";
-            //PowerShellAssemblyLoadContextInitializer.SetPowerShellAssemblyLoadContext(appBase);
+            string appBase = @"c:\dev\powershell";
+            PowerShellAssemblyLoadContextInitializer.SetPowerShellAssemblyLoadContext(appBase);
+
             Program p = new Program();
             Go(args);
-            Console.ReadKey();
+            //Console.ReadKey();
             Environment.Exit(0);
         }
         static List<IRunnerReporter> GetAvailableRunnerReporters()
@@ -109,6 +112,7 @@ namespace PSxUnit
 
         public static void GetTests(Options o)
         {
+            
             var nullMessage = new Xunit.NullMessageSink();
             var discoveryOptions = TestFrameworkOptions.ForDiscovery();
             using (var c = new XunitFrontController(AppDomainSupport.Denied, o.Assembly, null, false))
@@ -147,36 +151,46 @@ namespace PSxUnit
                 Console.WriteLine("TEST COUNT: {0}", tv.TestCases.Count);
                 //core execution Sink
 
-                IExecutionSink resultsSink;
-                ConcurrentDictionary<string, ExecutionSummary> completionMessages = new ConcurrentDictionary<string, ExecutionSummary>();
-                IMessageSinkWithTypes reporterMessageHandler;
-                var reporters = GetAvailableRunnerReporters();
-                var commandLine = CommandLine.Parse(reporters, @"CoreXunit.dll");
-                IRunnerLogger logger = new ConsoleRunnerLogger(!commandLine.NoColor);
-                reporterMessageHandler = MessageSinkWithTypesAdapter.Wrap(commandLine.Reporter.CreateMessageHandler(logger));
-                var xmlElement = new XElement("TestResult");
-                resultsSink = new XmlAggregateSink(reporterMessageHandler, completionMessages, xmlElement, () => true);
-                var message = new Xunit.NullMessageSink();
-                var executionOptions = TestFrameworkOptions.ForExecution();
-                c.RunTests(tv.TestCases, resultsSink, executionOptions);
-                resultsSink.Finished.WaitOne();
-                Stream file = new FileStream("c:\\dev\\result.xml", FileMode.Create);
-                xmlElement.Save(file);
-                file.Flush();
-                file.Dispose();
-                foreach (var assembly in commandLine.Project.Assemblies)
+                int testCaseCount = tv.TestCases.Count;
+                Stream file = new FileStream("c:\\dev\\result.xml", FileMode.Append);
+                int totalResult = 0;
+                int totalErrors = 0;
+                int totalFailed = 0;
+                int totalSkipped = 0;
+                for (int i = 0; i < testCaseCount; i++)
                 {
-                    reporterMessageHandler.OnMessage(new TestAssemblyExecutionFinished(assembly, executionOptions, resultsSink.ExecutionSummary));
+                    IExecutionSink resultsSink;
+                    ConcurrentDictionary<string, ExecutionSummary> completionMessages = new ConcurrentDictionary<string, ExecutionSummary>();
+                    IMessageSinkWithTypes reporterMessageHandler;
+                    var reporters = GetAvailableRunnerReporters();
+                    var commandLine = CommandLine.Parse(reporters, @"CoreXunit.dll");
+                    IRunnerLogger logger = new ConsoleRunnerLogger(!commandLine.NoColor);
+                    reporterMessageHandler = MessageSinkWithTypesAdapter.Wrap(commandLine.Reporter.CreateMessageHandler(logger));
+                    var xmlElement = new XElement("TestResult");
+                    resultsSink = new XmlAggregateSink(reporterMessageHandler, completionMessages, xmlElement, () => true);
+                    var message = new Xunit.NullMessageSink();
+                    var executionOptions = TestFrameworkOptions.ForExecution();
+                    c.RunTests(tv.TestCases.Take<Xunit.Abstractions.ITestCase>(1), resultsSink, executionOptions);
+                    resultsSink.Finished.WaitOne(5000);
+                    tv.TestCases.RemoveAt(0);
+                    totalResult++;
+                    totalErrors = totalErrors + resultsSink.ExecutionSummary.Errors;
+                    totalFailed = totalFailed + resultsSink.ExecutionSummary.Failed;
+                    totalSkipped = totalSkipped + resultsSink.ExecutionSummary.Skipped;
+                    xmlElement.Save(file);
+                    file.Flush();
                 }
-                Console.WriteLine("Total tests: " + resultsSink.ExecutionSummary.Total);
+                file.Dispose();
+
+                Console.WriteLine("Total tests: " + totalResult);
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Error tests: " + resultsSink.ExecutionSummary.Errors);
+                Console.WriteLine("Error tests: " + totalErrors);
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Failed tests: " + resultsSink.ExecutionSummary.Failed);
+                Console.WriteLine("Failed tests: " + totalFailed);
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Skipped tests: " + resultsSink.ExecutionSummary.Skipped);
+                Console.WriteLine("Skipped tests: " + totalSkipped);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Passed tests: " + (resultsSink.ExecutionSummary.Total - resultsSink.ExecutionSummary.Errors - resultsSink.ExecutionSummary.Failed - resultsSink.ExecutionSummary.Skipped));
+                Console.WriteLine("Passed tests: " + (totalResult - totalErrors - totalFailed - totalSkipped));
                 Console.ResetColor();
             }
         }
