@@ -67,7 +67,7 @@ namespace PSxUnit
         protected XunitFrontController controller;
         public static void Main(string[] args)
         {
-            string appBase = @"c:\dev\powershell";
+            string appBase = @".\\";
             PowerShellAssemblyLoadContextInitializer.SetPowerShellAssemblyLoadContext(appBase);
 
             Program p = new Program();
@@ -155,7 +155,7 @@ namespace PSxUnit
                 //core execution Sink
 
                 int testCaseCount = tv.TestCases.Count;
-                Stream file = new FileStream("c:\\dev\\result.xml", FileMode.Append);
+                Stream file = new FileStream(".\\result.xml", FileMode.Append);
                 int totalResult = 0;
                 int totalErrors = 0;
                 int totalFailed = 0;
