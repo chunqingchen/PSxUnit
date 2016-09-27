@@ -155,7 +155,7 @@ namespace PSxUnit
                 //core execution Sink
 
                 int testCaseCount = tv.TestCases.Count;
-                Stream file = new FileStream(".\\result.xml", FileMode.Append);
+                Stream file = new FileStream(".\\result.xml", FileMode.Create);
                 int totalResult = 0;
                 int totalErrors = 0;
                 int totalFailed = 0;
